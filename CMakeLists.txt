@@ -78,11 +78,33 @@ lv_linux_add_backend_if(LVGL_USE_INSTALLED OR CONFIG_LV_USE_SDL         ${DISPLA
 lv_linux_add_backend_if(LVGL_USE_INSTALLED OR CONFIG_LV_USE_X11         ${DISPLAY_BACKENDS} x11.c)
 lv_linux_add_backend_if(LVGL_USE_INSTALLED OR CONFIG_LV_USE_GLFW        ${DISPLAY_BACKENDS} glfw3.c)
 lv_linux_add_backend_if(LVGL_USE_INSTALLED OR CONFIG_LV_USE_EVDEV       ${INDEV_BACKENDS}   evdev.c)
+lv_linux_add_backend_if(LVGL_USE_INSTALLED OR CONFIG_LV_USE_HID_ENCODER ${INDEV_BACKENDS}   hid_encoder.c)
+
+if(CONFIG_LV_USE_HID_ENCODER)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(HIDAPI REQUIRED hidapi-hidraw)
+
+    # LV_USE_HID_ENCODER is a custom Kconfig option added in this project's
+    # own top-level Kconfig, not an upstream LVGL option - so the vendored
+    # lvgl submodule's generated lv_conf_internal.h (which only aliases
+    # known upstream CONFIG_LV_USE_* symbols to their plain LV_USE_*
+    # macro) has no entry for it, and CONFIG_LV_USE_HID_ENCODER=y never
+    # reaches the LV_USE_HID_ENCODER macro the backend code actually
+    # checks via #if. Define it directly as a compiler flag instead of
+    # patching the submodule (which tracks upstream lvgl.git and can't be
+    # pushed to/would be reverted on the next submodule bump).
+    add_compile_definitions(LV_USE_HID_ENCODER=1)
+endif()
 
 get_property(BACKEND_SRC GLOBAL PROPERTY LV_LINUX_BACKEND_SRC)
 
 # Library type is determined by BUILD_SHARED_LIBS (shared if ON, static if OFF)
 add_library(lvgl_linux ${LV_LINUX_SRC} ${BACKEND_SRC})
+
+if(CONFIG_LV_USE_HID_ENCODER)
+    target_include_directories(lvgl_linux PRIVATE ${HIDAPI_INCLUDE_DIRS})
+    target_link_libraries(lvgl_linux PUBLIC ${HIDAPI_LIBRARIES})
+endif()
 
 set(LIBS lvgl::lvgl)
 

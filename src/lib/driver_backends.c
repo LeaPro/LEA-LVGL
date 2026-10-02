@@ -87,6 +87,10 @@ backend_init_t available_backends[] = {
 #if LV_USE_EVDEV
     backend_init_evdev,
 #endif
+
+#if LV_USE_HID_ENCODER
+    backend_init_hid_encoder,
+#endif
     NULL    /* Sentinel */
 };
 

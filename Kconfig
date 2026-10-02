@@ -3,3 +3,11 @@ rsource "lvgl/Kconfig"
 config LV_USE_DEMO_TRUCK
 	bool "3D Truck Demo"
 	depends on LV_USE_GLTF
+
+config LV_USE_HID_ENCODER
+	bool "Trevally HID rotary encoder"
+	default n
+	help
+		Read a custom USB HID rotary encoder (Eberwein Hall-effect/AS5600
+		dial) via hidapi and expose it as an LV_INDEV_TYPE_ENCODER input
+		device through the driver_backends abstraction.
