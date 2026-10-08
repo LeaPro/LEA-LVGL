@@ -1,5 +1,7 @@
 .config 
 .config.old
 build/
+build-trevally/
+toolchainSetup
 .deps
 env
